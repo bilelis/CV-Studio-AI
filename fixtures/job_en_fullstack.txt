@@ -1,0 +1,23 @@
+Job Opportunity: Full Stack Developer Intern (M/F)
+Company: CloudScale Technologies
+Location: Paris / Remote (France)
+Contract Type: End-of-studies Internship (Stage de fin d'études - 6 months)
+Compensation: Standard internship stipend + meal vouchers + transport
+
+About the role:
+We are looking for a motivated and talented Full Stack Developer Intern to join our core engineering squad building our next-generation AI-powered cloud management platform.
+
+Key Responsibilities:
+- Build responsive, modern web interfaces using React, TypeScript, and modern CSS frameworks.
+- Design, implement, and maintain high-performance REST APIs using Node.js or Python (FastAPI).
+- Integrate backend microservices with relational and document databases (PostgreSQL, MongoDB).
+- Implement asynchronous task pipelines and explore integrations with local/cloud LLMs.
+- Collaborate with the team on CI/CD automation, unit testing, and Docker containerization.
+
+Requirements:
+- Final year Computer Science or Software Engineering student.
+- Hands-on experience with modern JavaScript/TypeScript and React.
+- Good understanding of backend engineering with Python (FastAPI) or Node.js.
+- Familiarity with SQL/NoSQL databases, RESTful APIs, Git, and Docker.
+- Passion for artificial intelligence, LLM tooling, and scalable system design.
+- Fluent in English with good written communication skills.

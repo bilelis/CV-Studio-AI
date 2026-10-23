@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="{{ letter.language }}" dir="{{ 'rtl' if letter.language == 'ar' else 'ltr' }}">
+<head>
+  <meta charset="utf-8">
+  <title>{{ basics.name }} - Lettre de motivation</title>
+  <style>
+    @page {
+      size: A4;
+      margin: 20mm;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      font-size: 10.5pt;
+      line-height: 1.5;
+      color: #1a1a1a;
+      background: #ffffff;
+      margin: 0;
+      padding: 0;
+    }
+    [dir="rtl"] body {
+      font-family: "Segoe UI", Tahoma, "Noto Naskh Arabic", "Cairo", sans-serif;
+    }
+    .sender-block {
+      margin-bottom: 25px;
+    }
+    .sender-name {
+      font-size: 14pt;
+      font-weight: 700;
+      color: #111111;
+      margin-bottom: 4px;
+    }
+    .sender-info {
+      font-size: 9.5pt;
+      color: #444444;
+      line-height: 1.4;
+    }
+    .ltr-text {
+      direction: ltr;
+      unicode-bidi: isolate;
+    }
+    .date-line {
+      margin-bottom: 25px;
+      font-size: 10pt;
+      color: #333333;
+      text-align: right;
+    }
+    [dir="rtl"] .date-line {
+      text-align: left;
+    }
+    .subject-line {
+      font-size: 11pt;
+      font-weight: 700;
+      color: #111111;
+      margin-bottom: 20px;
+    }
+    .greeting {
+      margin-bottom: 15px;
+      font-weight: 600;
+    }
+    .paragraph {
+      margin-bottom: 14px;
+      text-align: justify;
+      color: #222222;
+    }
+    .closing {
+      margin-top: 25px;
+      margin-bottom: 35px;
+    }
+    .signature {
+      font-weight: 700;
+      font-size: 11pt;
+      color: #111111;
+    }
+  </style>
+</head>
+<body>
+  <div class="sender-block">
+    <div class="sender-name">{{ basics.name }}</div>
+    <div class="sender-info">
+      {% if basics.location %}<div>{{ basics.location }}</div>{% endif %}
+      {% if basics.email %}<div class="ltr-text">{{ basics.email }}</div>{% endif %}
+      {% if basics.phone %}<div class="ltr-text">{{ basics.phone }}</div>{% endif %}
+      {% if basics.linkedin %}<div class="ltr-text">{{ basics.linkedin }}</div>{% endif %}
+    </div>
+  </div>
+
+  <div class="date-line">
+    {{ date_str }}
+  </div>
+
+  <div class="subject-line">
+    {% if letter.language == 'fr' %}Objet : {{ letter.subject }}{% elif letter.language == 'ar' %}الموضوع : {{ letter.subject }}{% else %}Subject: {{ letter.subject }}{% endif %}
+  </div>
+
+  <div class="greeting">
+    {{ letter.greeting }}
+  </div>
+
+  {% for p in letter.paragraphs %}
+  <div class="paragraph">
+    {{ p }}
+  </div>
+  {% endfor %}
+
+  <div class="closing">
+    {{ letter.closing }}
+  </div>
+
+  <div class="signature">
+    {{ basics.name }}
+  </div>
+</body>
+</html>

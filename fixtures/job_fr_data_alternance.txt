@@ -1,0 +1,22 @@
+Offre d'alternance : Data Analyst / Ingénieur BI (F/H)
+Entreprise : Nexa Analytics Paris
+Lieu : Paris, France (Hybride)
+Type de contrat : Contrat d'apprentissage / Alternance (12 à 24 mois)
+Niveau d'études : Bac+4 / Bac+5 en École d'ingénieurs ou Master Informatique / Business Intelligence
+
+À propos du poste :
+Au sein de notre équipe Data & BI, vous participerez activement à la conception et au déploiement de solutions de reporting et d'analyse prédictive pour nos clients grands comptes.
+
+Vos missions principales :
+- Développer, maintenir et optimiser des tableaux de bord interactifs sous Power BI.
+- Concevoir et exécuter des requêtes SQL complexes pour l'extraction et l'agrégation de données multi-sources.
+- Mettre en place des pipelines ETL automatisés avec Python et SQL pour alimenter le Data Warehouse.
+- Participer à l'intégration de modèles d'intelligence artificielle et d'analyse prédictive pour améliorer le reporting décisionnel.
+- Rédiger la documentation technique et former les utilisateurs métiers aux outils d'analyse.
+
+Profil recherché :
+- Étudiant(e) en dernière année de cursus ingénieur ou master spécialisé en Business Intelligence, Data Science ou Génie Logiciel.
+- Maîtrise solide de SQL (PostgreSQL, MySQL) et de Python pour la manipulation de données.
+- Forte appétence et expérience avec Power BI et la modélisation de données (étoile/flocon).
+- Connaissances pratiques en ETL, API REST et Git.
+- Sens de la rigueur, esprit analytique et bonne communication orale et écrite en français.

@@ -1,0 +1,213 @@
+@import "tailwindcss";
+
+@theme {
+  --color-canvas: #090B0E;
+  --color-surface-base: #11141A;
+  --color-surface-elevated: #161A22;
+  --color-surface-interactive: #1C222E;
+
+  --color-border-subtle: #1D222D;
+  --color-border-default: #282F3E;
+  --color-border-focus: #F59E0B;
+
+  --color-brand-50: #FFFBEB;
+  --color-brand-100: #FEF3C7;
+  --color-brand-200: #FDE68A;
+  --color-brand-300: #FCD34D;
+  --color-brand-400: #FBBF24;
+  --color-brand-500: #F59E0B;
+  --color-brand-600: #D97706;
+  --color-brand-700: #B45309;
+  --color-brand-800: #92400E;
+  --color-brand-900: #78350F;
+}
+
+:root {
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  color-scheme: dark;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #090B0E;
+  background-image: 
+    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(245, 158, 11, 0.06), transparent 70%),
+    radial-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  background-size: 100% 100%, 32px 32px;
+  background-attachment: fixed;
+  color: #F3F4F6;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Tabular figures for numbers */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* 3D Modern Tactile Surfaces (Stripe / Linear / Apple caliber) */
+.glass-panel,
+.card-3d {
+  background: linear-gradient(180deg, #131720 0%, #0D1016 100%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.08),
+    inset 0 -1px 0 0 rgba(0, 0, 0, 0.5),
+    0 8px 24px -4px rgba(0, 0, 0, 0.65),
+    0 2px 6px rgba(0, 0, 0, 0.4);
+  border-radius: 8px;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease;
+}
+
+.glass-panel-interactive,
+.card-3d-interactive {
+  background: linear-gradient(180deg, #141822 0%, #0E1117 100%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.08),
+    0 6px 20px -3px rgba(0, 0, 0, 0.55),
+    0 2px 4px rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.glass-panel-interactive:hover,
+.card-3d-interactive:hover {
+  transform: translateY(-2px);
+  border-color: rgba(245, 158, 11, 0.35);
+  box-shadow: 
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.16),
+    0 14px 32px -4px rgba(0, 0, 0, 0.75),
+    0 0 20px -2px rgba(245, 158, 11, 0.12);
+}
+
+/* Monospace Utility */
+.font-mono-code {
+  font-family: 'JetBrains Mono', monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 3D Tactile Buttons */
+.btn-brand-primary,
+.btn-3d-primary {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: linear-gradient(180deg, #FBBF24 0%, #D97706 100%);
+  color: #080A0E;
+  font-weight: 700;
+  border-radius: 6px;
+  border: 1px solid #F59E0B;
+  border-bottom: 2px solid #92400E;
+  box-shadow: 
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.45),
+    0 3px 0 0 #78350F,
+    0 8px 18px -2px rgba(245, 158, 11, 0.4);
+  cursor: pointer;
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-brand-primary:hover:not(:disabled),
+.btn-3d-primary:hover:not(:disabled) {
+  background: linear-gradient(180deg, #FCD34D 0%, #EAB308 100%);
+  border-color: #FCD34D;
+  box-shadow: 
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.6),
+    0 4px 0 0 #78350F,
+    0 10px 24px -2px rgba(245, 158, 11, 0.5);
+  transform: translateY(-1px);
+}
+
+.btn-brand-primary:active:not(:disabled),
+.btn-3d-primary:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow: 
+    inset 0 1px 0 0 rgba(0, 0, 0, 0.25),
+    0 1px 0 0 #78350F,
+    0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+.btn-brand-secondary,
+.btn-3d-secondary {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: linear-gradient(180deg, #1C212C 0%, #11141B 100%);
+  color: #E2E8F0;
+  font-weight: 600;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 2px solid rgba(0, 0, 0, 0.7);
+  box-shadow: 
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.1),
+    0 2px 0 0 #060709,
+    0 4px 12px rgba(0, 0, 0, 0.45);
+  cursor: pointer;
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-brand-secondary:hover:not(:disabled),
+.btn-3d-secondary:hover:not(:disabled) {
+  background: linear-gradient(180deg, #252C3B 0%, #161A23 100%);
+  color: #FFFFFF;
+  border-color: rgba(255, 255, 255, 0.18);
+  box-shadow: 
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.15),
+    0 3px 0 0 #060709,
+    0 6px 16px rgba(0, 0, 0, 0.55);
+  transform: translateY(-1px);
+}
+
+.btn-brand-secondary:active:not(:disabled),
+.btn-3d-secondary:active:not(:disabled) {
+  transform: translateY(1.5px);
+  box-shadow: 
+    inset 0 1px 0 0 rgba(0, 0, 0, 0.4),
+    0 0.5px 0 0 #060709;
+}
+
+/* 3D Inset Surface (for input boxes, code blocks, and nested zones) */
+.surface-3d-inset {
+  background: #080A0D;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-top-color: rgba(0, 0, 0, 0.8);
+  box-shadow: 
+    inset 0 2px 4px 0 rgba(0, 0, 0, 0.6),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.3),
+    0 1px 0 0 rgba(255, 255, 255, 0.04);
+}
+
+/* Custom Sleek Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #090B0E;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #232936;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #363F52;
+}
+
+/* Smooth Entrance Animation */
+@keyframes smoothFadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fadeIn {
+  animation: smoothFadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}

@@ -1,0 +1,88 @@
+{
+  "basics": {
+    "name": "Bilel Ayari",
+    "headline": "Développeur Full Stack & Ingénieur assisté par l'IA",
+    "email": "ba336158@gmail.com",
+    "phone": "+216 93 783 124",
+    "location": "Tunisie",
+    "github": "github.com/bilelis",
+    "linkedin": "linkedin.com/in/bilel-ayari"
+  },
+  "summary": "Étudiant en Business Intelligence et Génie Logiciel, avec une solide expérience pratique du développement Full Stack et de l'ingénierie assistée par l'IA. Parcours éprouvé dans la réalisation de projets concrets avec React, TypeScript, PHP et SQL. Explore activement l'architecture des systèmes d'IA et les workflows LLM.",
+  "skills": {
+    "Frontend": ["React.js", "Next.js", "TypeScript", "Tailwind CSS", "Vite"],
+    "Backend": ["PHP", "Python", "FastAPI", "SQL", "MySQL", "PostgreSQL", "REST API"],
+    "IA & outils": ["LLM", "OpenAI API", "Prompt engineering", "Agents IA", "Cursor AI"],
+    "Données / Cloud": ["Supabase", "Business Intelligence", "Git", "GitHub", "CI/CD"]
+  },
+  "experience": [],
+  "projects": [
+    {
+      "id": "grand-azur-palace",
+      "name": "Grand Azur Palace Resort & Spa – Console de gestion et d'analytique",
+      "role": "Développeur Full Stack",
+      "year": "2026",
+      "stack": ["React 18", "TypeScript", "Node.js", "Express", "MongoDB", "Ollama", "Qwen 2.5", "JWT"],
+      "bullets": [
+        "Conception d'une plateforme de gestion pour hôtel 5 étoiles avec tableau de bord analytique en temps réel (RevPAR, ADR, ventes) et facturation instantanée des séjours.",
+        "Intégration d'un LLM local (Qwen 2.5 via Ollama) pour interroger en langage naturel la base MongoDB (13 collections, 89 000+ enregistrements), avec backend Node.js/Express et authentification JWT."
+      ],
+      "source": "cv",
+      "url": ""
+    },
+    {
+      "id": "shorts-ai",
+      "name": "Shorts AI – Générateur de vidéos courtes virales",
+      "role": "Développeur Backend & IA",
+      "year": "2026",
+      "stack": ["Python", "FastAPI", "Whisper", "FFmpeg", "Ollama"],
+      "bullets": [
+        "Développement d'un pipeline IA entièrement automatisé qui transforme audio ou vidéos YouTube en vidéos prêtes pour TikTok, Reels et Shorts : transcription Whisper, détection des temps forts, montage selon le rythme et sous-titres trilingues (arabe/français/anglais).",
+        "API FastAPI, traitement vidéo avec FFmpeg et modèles IA locaux via Ollama, sans coûts d'API."
+      ],
+      "source": "cv",
+      "url": ""
+    },
+    {
+      "id": "flow-ai",
+      "name": "Flow AI – SaaS Full Stack pour freelances",
+      "role": "Développeur Full Stack",
+      "year": "2024",
+      "stack": ["Next.js", "FastAPI", "Supabase", "OpenAI"],
+      "bullets": [
+        "Développement d'une plateforme SaaS complète avec un tableau de bord freelance pour la gestion des clients et des tâches.",
+        "Intégration de l'API OpenAI pour fournir une assistance par IA à l'organisation des tâches et à la communication client.",
+        "Conception du backend avec Python (FastAPI) et Supabase pour la persistance des données en temps réel et l'authentification."
+      ],
+      "source": "cv",
+      "url": ""
+    },
+    {
+      "id": "rh-contrats-cdd",
+      "name": "RH – Système de gestion des contrats CDD",
+      "role": "Développeur Full Stack",
+      "year": "2023",
+      "stack": ["React", "PHP", "SQL"],
+      "bullets": [
+        "Conception d'un système de gestion avec 5 interfaces distinctes, adaptées aux différents rôles RH.",
+        "Implémentation complète du CRUD pour les contrats des employés et du suivi automatisé des statuts via un backend PHP/SQL."
+      ],
+      "source": "cv",
+      "url": ""
+    }
+  ],
+  "education": [
+    {
+      "degree": "Diplôme d'ingénieur en Business Intelligence & Génie Logiciel",
+      "school": "",
+      "location": "Tunisie",
+      "period": "2022 – Aujourd'hui",
+      "details": "Spécialisation actuelle : architecture des données, systèmes d'IA et conception logicielle avancée."
+    }
+  ],
+  "languages": [
+    "Arabe : langue maternelle",
+    "Français : niveau professionnel",
+    "Anglais : niveau professionnel"
+  ]
+}

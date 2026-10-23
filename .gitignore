@@ -1,0 +1,47 @@
+# Python & Environments
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.coverage
+htmlcov/
+dist/
+build/
+*.egg-info/
+.venv/
+env/
+venv/
+ENV/
+*.log
+
+# Generated Outputs & Temporary Files
+data/outputs/*.pdf
+!data/outputs/.gitkeep
+backend/data/outputs/*.pdf
+!backend/data/outputs/.gitkeep
+
+# Sensitive Local Data & Credentials
+.env
+.env.local
+data/profile.json
+backend/data/profile.json
+
+# Node & Frontend Build Artifacts
+node_modules/
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+.npm/
+
+# IDE, Editors & OS Metadata
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# AI Agent Workspace
+.agents/
