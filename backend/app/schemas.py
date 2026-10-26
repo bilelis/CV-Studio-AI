@@ -38,6 +38,13 @@ class MasterProfile(BaseModel):
     education: list[Education] = []
     languages: list[str] = []
 
+class RecruiterQuestion(BaseModel):
+    question: str
+    category: str = "Technical"
+    why_asked: str = ""
+    talking_points: list[str] = []
+    ideal_answer: str = ""
+
 class JobAnalysis(BaseModel):
     title: str
     company: str = ""
@@ -47,6 +54,7 @@ class JobAnalysis(BaseModel):
     nice_to_have_skills: list[str] = []
     keywords: list[str] = []
     responsibilities: list[str] = Field(default=[], max_length=5)
+    recruiter_questions: list[RecruiterQuestion] = []
 
 class ProjectScore(BaseModel):
     project_id: str
@@ -108,9 +116,13 @@ class GenerateResponse(BaseModel):
     letter_pdf_url: str
     ats_report: ATSReport
     warnings: list[str]
+    recruiter_questions: list[RecruiterQuestion] = []
 
 class GitHubImportRequest(BaseModel):
     username: str
+
+class AnalyzeRepoRequest(BaseModel):
+    url: str
 
 class HealthResponse(BaseModel):
     ok: bool

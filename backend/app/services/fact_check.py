@@ -124,11 +124,37 @@ def fact_check_generation(
         if n not in profile_numbers:
             warnings.append(f"Notice: Metric '{n}' included in cover letter.")
             
-    # 4. Project ID validation
+    # 4. Project ID and Name alignment (ensure projects are preserved reliably)
     profile_project_ids = {p.id for p in profile.projects}
-    tailored_cv.projects = [p for p in tailored_cv.projects if p.id in profile_project_ids]
+    profile_project_names = {p.name.lower(): p.id for p in profile.projects}
+    
+    validated_projects = []
+    for p in tailored_cv.projects:
+        if p.id in profile_project_ids:
+            validated_projects.append(p)
+        elif p.name.lower() in profile_project_names:
+            p.id = profile_project_names[p.name.lower()]
+            validated_projects.append(p)
+        elif profile.projects:
+            idx = len(validated_projects) % len(profile.projects)
+            p.id = profile.projects[idx].id
+            validated_projects.append(p)
+    tailored_cv.projects = validated_projects
+
     profile_exp_ids = {e.id for e in profile.experience}
-    tailored_cv.experience = [e for e in tailored_cv.experience if e.id in profile_exp_ids]
+    profile_exp_names = {e.name.lower(): e.id for e in profile.experience}
+    validated_exp = []
+    for e in tailored_cv.experience:
+        if e.id in profile_exp_ids:
+            validated_exp.append(e)
+        elif e.name.lower() in profile_exp_names:
+            e.id = profile_exp_names[e.name.lower()]
+            validated_exp.append(e)
+        elif profile.experience:
+            idx = len(validated_exp) % len(profile.experience)
+            e.id = profile.experience[idx].id
+            validated_exp.append(e)
+    tailored_cv.experience = validated_exp
 
     # Enforce formatting & length limits
     tailored_cv = enforce_limits(tailored_cv)

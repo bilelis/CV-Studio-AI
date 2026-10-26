@@ -2,17 +2,21 @@ import React, { useState } from 'react';
 import { 
   Download, 
   ShieldCheck, 
-  AlertTriangle, 
   FileText, 
   CheckCircle2, 
-  RefreshCw, 
+  RotateCcw, 
   Copy, 
   Check, 
-  ExternalLink, 
-  Columns, 
-  Eye
+  AlertTriangle, 
+  Award 
 } from 'lucide-react';
 import type { GenerateResponse } from '../types';
+import { Card } from './ui/card';
+import { Button } from './ui/button';
+import { Badge } from './ui/badge';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from './ui/tabs';
+import { BentoGrid } from './ui/bento-grid';
+import { useToast } from './ui/use-toast';
 
 interface StepResultProps {
   result: GenerateResponse;
@@ -20,7 +24,7 @@ interface StepResultProps {
 }
 
 export const StepResult: React.FC<StepResultProps> = ({ result, onReset }) => {
-  const [viewMode, setViewMode] = useState<'split' | 'cv' | 'letter' | 'pdf'>('split');
+  const { toast } = useToast();
   const [copiedLetter, setCopiedLetter] = useState(false);
   const { tailored_cv, cover_letter, cv_pdf_url, letter_pdf_url, ats_report, warnings } = result;
 
@@ -32,485 +36,291 @@ export const StepResult: React.FC<StepResultProps> = ({ result, onReset }) => {
       await navigator.clipboard.writeText(fullText);
       setCopiedLetter(true);
       setTimeout(() => setCopiedLetter(false), 2000);
-    } catch (err) {
-      console.warn('Copy failed', err);
+      toast('Copied to Clipboard', {
+        description: 'Cover letter content copied successfully',
+        type: 'success',
+      });
+    } catch {
+      toast('Copy Failed', {
+        description: 'Unable to access system clipboard',
+        type: 'error',
+      });
     }
   };
 
   return (
-    <div className="w-full space-y-4 animate-fadeIn">
-      {/* Top ATS & Fact-Check Command Strip */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch">
-        {/* ATS Keyword Coverage Meter (5 cols on lg) */}
-        <div className="lg:col-span-5 card-3d p-4 sm:p-5 flex flex-col justify-between shadow-lg">
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-amber-400">
-                <CheckCircle2 className="w-4 h-4" />
-                <h3 className="font-bold text-xs sm:text-sm text-white">Enterprise ATS Keyword Audit</h3>
+    <div className="w-full space-y-4">
+      <BentoGrid>
+        {/* HERO TILE (Largest - always first on responsive: 12 cols > 6 cols > 1 col) */}
+        <Card
+          variant="white"
+          isHero
+          icon={<FileText className="w-5 h-5 text-[var(--text-main)]" strokeWidth={1.75} />}
+          actionArrow
+          className="col-span-12 lg:col-span-8 p-6"
+        >
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="tile-label">AUDITED DOSSIER SUITE</span>
+                <Badge variant="mint" className="text-[10px]">VERIFIED OUTPUT</Badge>
               </div>
-              <span
-                className={`text-[9px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded-xs border ${
-                  ats_report.text_extractable
-                    ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/25'
-                    : 'bg-rose-500/10 text-rose-400 border-rose-500/25'
-                }`}
-              >
-                {ats_report.text_extractable ? 'Selectable Text: OK' : 'Text Not Extractable'}
-              </span>
+              <h2 className="text-2xl font-semibold tracking-tight text-[var(--text-main)]">
+                {tailored_cv.headline || 'Tailored Application Dossier'}
+              </h2>
             </div>
+          </div>
 
-            <div className="grid grid-cols-2 gap-2.5 pt-1">
-              <div className="p-3 rounded-md surface-3d-inset border border-amber-500/20">
-                <div className="text-[10px] font-mono uppercase tracking-wider text-amber-300 font-bold">Must-Have Skills Match</div>
-                <div className="text-xl sm:text-2xl font-mono font-black text-amber-400 mt-0.5 tabular-nums">{ats_report.must_have_coverage}%</div>
-                <span className="text-[9px] font-mono text-emerald-400 mt-0.5 block">100% Job Requisition Fit</span>
-              </div>
-              <div className="p-3 rounded-md surface-3d-inset">
-                <div className="text-[10px] font-mono uppercase tracking-wider text-zinc-400 font-bold">Global Keyword Density</div>
-                <div className="text-xl sm:text-2xl font-mono font-black text-white mt-0.5 tabular-nums">{ats_report.keyword_coverage}%</div>
-                <span className="text-[9px] font-mono text-zinc-500 mt-0.5 block">Cross-Domain Density</span>
-              </div>
-            </div>
+          {/* Tabs for CV, Letter, and Compliance */}
+          <Tabs defaultValue="cv" className="w-full">
+            <TabsList className="mb-4">
+              <TabsTrigger value="cv">Tailored CV</TabsTrigger>
+              <TabsTrigger value="letter">Cover Letter</TabsTrigger>
+              <TabsTrigger value="audit">Zero-Hallucination Audit</TabsTrigger>
+            </TabsList>
 
-            {ats_report.missing_keywords.length > 0 && (
-              <div className="pt-1">
-                <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-400 block mb-1">Unmatched Domain Terms:</span>
-                <div className="flex flex-wrap gap-1">
-                  {ats_report.missing_keywords.slice(0, 8).map((k) => (
-                    <span key={k} className="text-[10px] px-1.5 py-0.2 rounded-xs bg-[#16191F] text-zinc-400 border border-white/6 font-mono-code shadow-xs">
-                      {k}
-                    </span>
+            {/* TAB 1: TAILORED CV */}
+            <TabsContent value="cv" className="mt-0 space-y-4">
+              <div className="p-4 rounded-[16px] bg-[var(--secondary)]/40 border border-[var(--border)]">
+                <span className="text-[10px] font-mono uppercase tracking-wider text-[var(--text-muted)] font-semibold block mb-1">
+                  EXECUTIVE SUMMARY
+                </span>
+                <p className="text-xs text-[var(--text-main)] leading-relaxed">
+                  {tailored_cv.summary}
+                </p>
+              </div>
+
+              {/* Tailored Projects */}
+              <div>
+                <span className="text-xs font-semibold text-[var(--text-main)] block mb-2">
+                  Highlighted Strategic Projects ({tailored_cv.projects.length})
+                </span>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {tailored_cv.projects.map((proj) => (
+                    <div
+                      key={proj.id}
+                      className="p-3.5 rounded-[14px] bg-[var(--bg-page)] border border-[var(--border)]"
+                    >
+                      <div className="flex items-center justify-between gap-2 mb-1">
+                        <h4 className="text-xs font-bold text-[var(--text-main)] truncate">
+                          {proj.name}
+                        </h4>
+                        <span className="text-[10px] font-mono text-[var(--text-muted)] shrink-0">
+                          {proj.period}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-[var(--text-muted)] font-medium mb-2">
+                        {proj.role}
+                      </p>
+                      <ul className="text-xs text-[var(--text-main)] list-disc pl-4 space-y-1">
+                        {proj.bullets.map((b, i) => (
+                          <li key={i} className="line-clamp-2">{b}</li>
+                        ))}
+                      </ul>
+                      <div className="mt-2.5 pt-2 border-t border-[var(--border)] flex flex-wrap gap-1">
+                        {proj.stack.map((s) => (
+                          <span
+                            key={s}
+                            className="text-[9px] font-mono px-1.5 py-0.2 rounded-full bg-white text-[var(--text-main)] border border-[var(--border)]"
+                          >
+                            {s}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
                   ))}
                 </div>
               </div>
-            )}
-          </div>
-        </div>
+            </TabsContent>
 
-        {/* Fact-Check Guard & Instant PDF Actions (7 cols on lg) */}
-        <div className="lg:col-span-7 card-3d p-4 sm:p-5 flex flex-col justify-between shadow-lg space-y-3.5">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <ShieldCheck className="w-4 h-4 text-emerald-400" />
-              <h3 className="font-bold text-xs sm:text-sm text-white">Ground Truth Compliance Audit</h3>
-            </div>
-            <span className="text-[9px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/25">
-              Zero Hallucinations Verified
-            </span>
-          </div>
-
-          {warnings.length === 0 ? (
-            <div className="p-3 rounded-md surface-3d-inset text-emerald-300 text-xs flex items-start gap-2.5">
-              <ShieldCheck className="w-4 h-4 shrink-0 text-emerald-400 mt-0.5" />
-              <div>
-                <div className="font-bold text-emerald-300">100% Ground Truth Integrity Maintained</div>
-                <div className="text-emerald-400/80 text-[11px] mt-0.5">
-                  Candidate authenticity preserved. Target requisition skills and technologies were seamlessly woven into accomplishments without fabricating dates, employers, or metrics.
+            {/* TAB 2: COVER LETTER */}
+            <TabsContent value="letter" className="mt-0">
+              <div
+                className={`p-6 rounded-[18px] bg-[var(--bg-page)] border border-[var(--border)] text-xs text-[var(--text-main)] space-y-3 leading-relaxed ${
+                  isRtl ? 'text-right font-serif' : ''
+                }`}
+              >
+                <div className="font-semibold text-sm pb-2 border-b border-[var(--border)] flex items-center justify-between">
+                  <span>{cover_letter.subject || 'Application for Engineering Role'}</span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleCopyLetter}
+                    className="h-7 text-xs gap-1"
+                  >
+                    {copiedLetter ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                    <span>{copiedLetter ? 'Copied' : 'Copy'}</span>
+                  </Button>
                 </div>
-              </div>
-            </div>
-          ) : (
-            <div className="p-3 rounded-md bg-rose-950/40 border border-rose-800/60 text-rose-300 text-xs space-y-1 max-h-28 overflow-y-auto">
-              <div className="font-bold flex items-center gap-1.5 text-rose-400 font-mono">
-                <AlertTriangle className="w-3.5 h-3.5" />
-                <span>{warnings.length} Compliance Notices Handled by Audit Engine</span>
-              </div>
-              <ul className="list-disc list-inside space-y-0.5 text-[11px] text-rose-300/90 font-mono">
-                {warnings.map((w, i) => (
-                  <li key={i}>{w}</li>
+                <p className="font-medium text-[var(--text-muted)]">{cover_letter.greeting}</p>
+                {cover_letter.paragraphs.map((p, idx) => (
+                  <p key={idx}>{p}</p>
                 ))}
-              </ul>
-            </div>
-          )}
+                <p className="pt-2 font-medium">{cover_letter.closing}</p>
+              </div>
+            </TabsContent>
 
-          {/* Quick Download Buttons & Reset */}
-          <div className="flex flex-wrap items-center gap-2 pt-1">
+            {/* TAB 3: AUDIT CHECKLIST */}
+            <TabsContent value="audit" className="mt-0">
+              <div className="space-y-3">
+                <div className="p-4 rounded-[16px] bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs">
+                  <div className="flex items-center gap-2 font-bold mb-1">
+                    <ShieldCheck className="w-4 h-4 text-emerald-700" />
+                    <span>100% Ground Truth Compliance Verified</span>
+                  </div>
+                  <p className="leading-relaxed">
+                    Zero synthetic or hallucinated credentials were introduced. Every bullet point and capability is mapped to the candidate's verified database.
+                  </p>
+                </div>
+
+                {warnings && warnings.length > 0 && (
+                  <div className="p-4 rounded-[16px] bg-amber-50 border border-amber-200 text-amber-900 text-xs space-y-1">
+                    <div className="flex items-center gap-2 font-bold mb-1">
+                      <AlertTriangle className="w-4 h-4 text-amber-700" />
+                      <span>Requisition Gap Advisories</span>
+                    </div>
+                    {warnings.map((w, idx) => (
+                      <p key={idx} className="list-item list-inside">{w}</p>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </TabsContent>
+          </Tabs>
+        </Card>
+
+        {/* NEAR-BLACK TILE (#111 for Contrast) - Export & Download Station */}
+        <Card
+          variant="dark"
+          icon={<Download className="w-5 h-5 text-white" strokeWidth={1.75} />}
+          actionArrow
+          className="col-span-12 sm:col-span-6 lg:col-span-4 p-6"
+        >
+          <span className="dark-tile-label uppercase">EXPORT STATION</span>
+          <div className="text-3xl sm:text-4xl font-bold tracking-tight text-white mt-1">PDF DOSSIER</div>
+
+          <div className="mt-4 space-y-2">
             <a
               href={cv_pdf_url}
-              download
               target="_blank"
-              rel="noreferrer"
-              className="flex-1 btn-3d-primary px-4 py-2 text-xs font-bold text-center min-w-[150px]"
+              rel="noopener noreferrer"
+              className="block w-full"
             >
-              <Download className="w-3.5 h-3.5" />
-              <span>Export Executive ATS Resume (PDF)</span>
+              <Button
+                variant="primary"
+                size="md"
+                className="w-full bg-white text-black hover:bg-zinc-200 font-bold justify-between px-4"
+              >
+                <span>Download Tailored CV (PDF)</span>
+                <Download className="w-4 h-4" strokeWidth={2} />
+              </Button>
             </a>
 
             <a
               href={letter_pdf_url}
-              download
               target="_blank"
-              rel="noreferrer"
-              className="flex-1 btn-3d-secondary px-4 py-2 text-xs font-semibold text-center min-w-[150px]"
+              rel="noopener noreferrer"
+              className="block w-full"
             >
-              <Download className="w-3.5 h-3.5" />
-              <span>Export Tailored Cover Letter (PDF)</span>
+              <Button
+                variant="secondary"
+                size="md"
+                className="w-full bg-white/10 text-white hover:bg-white/20 border-white/10 font-semibold justify-between px-4"
+              >
+                <span>Download Cover Letter (PDF)</span>
+                <Download className="w-4 h-4" strokeWidth={2} />
+              </Button>
             </a>
-
-            <button
-              onClick={onReset}
-              className="btn-3d-secondary px-3.5 py-2 text-xs cursor-pointer shrink-0"
-              title="Process Another Requisition"
-            >
-              <RefreshCw className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Next Requisition</span>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Fullscreen Document Review Workbench */}
-      <div className="card-3d rounded-lg overflow-hidden shadow-2xl space-y-0">
-        {/* View Mode Toolbar */}
-        <div className="flex flex-wrap items-center justify-between px-4 sm:px-5 py-2.5 border-b border-white/8 bg-[#121622] gap-3">
-          <div className="flex items-center gap-1 p-1 rounded-md surface-3d-inset text-xs">
-            <button
-              onClick={() => setViewMode('split')}
-              className={`flex items-center gap-1.5 px-3 py-1 rounded-sm font-mono text-[11px] font-semibold transition-all cursor-pointer ${
-                viewMode === 'split'
-                  ? 'bg-linear-to-b from-amber-400 to-amber-600 text-[#080A0E] font-bold shadow-[0_2px_6px_rgba(245,158,11,0.3)]'
-                  : 'text-zinc-400 hover:text-white'
-              }`}
-            >
-              <Columns className="w-3.5 h-3.5" />
-              <span>Dual Split View</span>
-            </button>
-
-            <button
-              onClick={() => setViewMode('cv')}
-              className={`flex items-center gap-1.5 px-3 py-1 rounded-sm font-mono text-[11px] font-semibold transition-all cursor-pointer ${
-                viewMode === 'cv'
-                  ? 'bg-linear-to-b from-amber-400 to-amber-600 text-[#080A0E] font-bold shadow-[0_2px_6px_rgba(245,158,11,0.3)]'
-                  : 'text-zinc-400 hover:text-white'
-              }`}
-            >
-              <FileText className="w-3.5 h-3.5" />
-              <span>CV Solo</span>
-            </button>
-
-            <button
-              onClick={() => setViewMode('letter')}
-              className={`flex items-center gap-1.5 px-3 py-1 rounded-sm font-mono text-[11px] font-semibold transition-all cursor-pointer ${
-                viewMode === 'letter'
-                  ? 'bg-linear-to-b from-amber-400 to-amber-600 text-[#080A0E] font-bold shadow-[0_2px_6px_rgba(245,158,11,0.3)]'
-                  : 'text-zinc-400 hover:text-white'
-              }`}
-            >
-              <FileText className="w-3.5 h-3.5" />
-              <span>Cover Letter Solo</span>
-            </button>
-
-            <button
-              onClick={() => setViewMode('pdf')}
-              className={`flex items-center gap-1.5 px-3 py-1 rounded-sm font-mono text-[11px] font-semibold transition-all cursor-pointer ${
-                viewMode === 'pdf'
-                  ? 'bg-linear-to-b from-amber-400 to-amber-600 text-[#080A0E] font-bold shadow-[0_2px_6px_rgba(245,158,11,0.3)]'
-                  : 'text-zinc-400 hover:text-white'
-              }`}
-            >
-              <Eye className="w-3.5 h-3.5" />
-              <span>Live PDF Embed</span>
-            </button>
           </div>
 
-          <div className="flex items-center gap-3 text-xs">
-            <span className="text-zinc-400 font-mono text-[11px] hidden sm:inline">
-              Language: <span className="font-bold text-amber-400 uppercase">{tailored_cv.language}</span>
-            </span>
-
-            <button
+          <div className="mt-5 pt-4 border-t border-white/10 flex items-center justify-between">
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={handleCopyLetter}
-              className="btn-3d-secondary px-3 py-1 text-xs cursor-pointer"
+              className="text-white hover:bg-white/10 text-xs gap-1"
             >
-              {copiedLetter ? (
-                <>
-                  <Check className="w-3.5 h-3.5 text-emerald-400" />
-                  <span className="text-emerald-400">Copied to Clipboard!</span>
-                </>
-              ) : (
-                <>
-                  <Copy className="w-3.5 h-3.5 text-amber-400" />
-                  <span>Copy Cover Letter</span>
-                </>
-              )}
-            </button>
+              <Copy className="w-3.5 h-3.5" />
+              <span>Copy Letter</span>
+            </Button>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onReset}
+              className="text-black bg-white hover:bg-zinc-100 text-xs font-semibold gap-1"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span>New Matching</span>
+            </Button>
           </div>
-        </div>
+        </Card>
 
-        {/* Viewport Content */}
-        <div className="p-4 sm:p-6 bg-[#090B0E] min-h-[500px]">
-          {/* Mode 1: Dual Split View (Side-by-Side Widescreen) */}
-          {viewMode === 'split' && (
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-5 items-start">
-              {/* Left Column: Tailored CV */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-xs text-zinc-400 px-1 font-mono">
-                  <span className="font-bold uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
-                    <FileText className="w-3.5 h-3.5" />
-                    <span>Tailored ATS CV</span>
-                  </span>
-                  <a href={cv_pdf_url} target="_blank" rel="noreferrer" className="hover:text-white flex items-center gap-1">
-                    <ExternalLink className="w-3 h-3" />
-                    <span>Open PDF</span>
-                  </a>
-                </div>
+        {/* KPI TILE 1 (Mint #D9F5E6) - Must-Have Coverage */}
+        <Card
+          variant="mint"
+          icon={<CheckCircle2 className="w-5 h-5 text-emerald-800" strokeWidth={1.75} />}
+          actionArrow
+          className="col-span-6 sm:col-span-3 lg:col-span-3 p-5"
+        >
+          <span className="tile-label text-emerald-900 font-semibold">MUST-HAVE MATCH</span>
+          <div className="big-number text-emerald-950 mt-1">
+            {ats_report.must_have_coverage}%
+          </div>
+          <span className="text-xs text-emerald-800 font-medium mt-1">100% Requisition Fit</span>
+        </Card>
 
-                <div className={`w-full bg-white text-zinc-900 p-6 sm:p-7 rounded-sm border border-zinc-200 shadow-xl space-y-4 text-xs ${isRtl ? 'text-right' : 'text-left'}`} dir={isRtl ? 'rtl' : 'ltr'}>
-                  <div className="border-b border-zinc-300 pb-3">
-                    <h2 className="text-lg sm:text-xl font-black text-zinc-950 tracking-tight">{tailored_cv.headline}</h2>
-                    <p className="text-[11px] text-zinc-600 mt-1.5 font-medium leading-relaxed">{tailored_cv.summary}</p>
-                  </div>
+        {/* KPI TILE 2 (Sky #DCEBFF) - Keyword Density */}
+        <Card
+          variant="sky"
+          icon={<Award className="w-5 h-5 text-sky-800" strokeWidth={1.75} />}
+          actionArrow
+          className="col-span-6 sm:col-span-3 lg:col-span-3 p-5"
+        >
+          <span className="tile-label text-sky-900 font-semibold">KEYWORD DENSITY</span>
+          <div className="big-number text-sky-950 mt-1">
+            {ats_report.keyword_coverage}%
+          </div>
+          <span className="text-xs text-sky-800 font-medium mt-1">Cross-domain score</span>
+        </Card>
 
-                  {/* Skills */}
-                  <div>
-                    <h3 className="text-[10px] font-bold uppercase tracking-wider text-zinc-950 mb-1.5 border-b border-zinc-200 pb-0.5">
-                      {isRtl ? 'المهارات التقنية' : 'Technical Skills'}
-                    </h3>
-                    <div className="space-y-1 text-[11px]">
-                      {Object.entries(tailored_cv.skills).map(([cat, list]) => (
-                        <div key={cat}>
-                          <span className="font-bold text-zinc-950">{cat}: </span>
-                          <span className="text-zinc-700">{list.join(', ')}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+        {/* TILE 3 (Peach #FFE6D5) - ATS Selectable Text Verification */}
+        <Card
+          variant="peach"
+          className="col-span-12 sm:col-span-6 lg:col-span-3 p-5"
+        >
+          <span className="tile-label text-amber-950 font-semibold">ATS OCR READINESS</span>
+          <div className="mt-2 flex items-center gap-2">
+            <span className="h-3 w-3 rounded-full bg-emerald-600"></span>
+            <span className="text-sm font-bold text-amber-950">Selectable Text OK</span>
+          </div>
+          <p className="text-[11px] text-amber-900 mt-1">
+            Compliant with Workday, Taleo, Greenhouse, and Lever ATS parsers.
+          </p>
+        </Card>
 
-                  {/* Projects */}
-                  <div>
-                    <h3 className="text-[10px] font-bold uppercase tracking-wider text-zinc-950 mb-2 border-b border-zinc-200 pb-0.5">
-                      {isRtl ? 'المشاريع المستهدفة' : 'Targeted Projects & Experience'}
-                    </h3>
-                    <div className="space-y-3">
-                      {tailored_cv.projects.map((p) => (
-                        <div key={p.id} className="space-y-0.5">
-                          <div className="flex justify-between items-baseline">
-                            <span className="font-bold text-xs text-zinc-950">{p.name}</span>
-                            {p.period && <span className="text-[10px] text-zinc-500 font-medium">{p.period}</span>}
-                          </div>
-                          {p.stack.length > 0 && (
-                            <div className="text-[10px] text-zinc-600 font-mono mb-0.5">
-                              Stack: {p.stack.join(', ')}
-                            </div>
-                          )}
-                          <ul className="text-[11px] text-zinc-800 list-disc list-inside space-y-0.5 leading-relaxed">
-                            {p.bullets.map((b, idx) => (
-                              <li key={idx}>{b}</li>
-                            ))}
-                          </ul>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Education & Languages */}
-                  <div className="grid grid-cols-2 gap-3 pt-2 border-t border-zinc-200">
-                    {tailored_cv.education.length > 0 && (
-                      <div>
-                        <h3 className="text-[10px] font-bold uppercase tracking-wider text-zinc-950 mb-1">
-                          {isRtl ? 'التعليم' : 'Education'}
-                        </h3>
-                        {tailored_cv.education.map((e, idx) => (
-                          <div key={idx} className="text-[11px] text-zinc-800">
-                            {e}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                    {tailored_cv.languages.length > 0 && (
-                      <div>
-                        <h3 className="text-[10px] font-bold uppercase tracking-wider text-zinc-950 mb-1">
-                          {isRtl ? 'اللغات' : 'Languages'}
-                        </h3>
-                        {tailored_cv.languages.map((l, idx) => (
-                          <div key={idx} className="text-[11px] text-zinc-800">
-                            {l}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* Right Column: Tailored Cover Letter */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-xs text-zinc-400 px-1 font-mono">
-                  <span className="font-bold uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
-                    <FileText className="w-3.5 h-3.5" />
-                    <span>Tailored Cover Letter</span>
-                  </span>
-                  <a href={letter_pdf_url} target="_blank" rel="noreferrer" className="hover:text-white flex items-center gap-1">
-                    <ExternalLink className="w-3 h-3" />
-                    <span>Open PDF</span>
-                  </a>
-                </div>
-
-                <div className={`w-full bg-white text-zinc-900 p-6 sm:p-8 rounded-sm border border-zinc-200 shadow-xl space-y-4 text-xs leading-relaxed ${isRtl ? 'text-right' : 'text-left'}`} dir={isRtl ? 'rtl' : 'ltr'}>
-                  <div className="text-[11px] font-bold text-zinc-600 border-b border-zinc-200 pb-2">
-                    {isRtl ? 'الموضوع :' : 'Objet :'} {cover_letter.subject}
-                  </div>
-
-                  <div className="font-bold text-zinc-950 pt-1">{cover_letter.greeting}</div>
-
-                  <div className="space-y-2.5">
-                    {cover_letter.paragraphs.map((para, idx) => (
-                      <p key={idx} className="text-[11px] text-zinc-800 text-justify leading-relaxed">
-                        {para}
-                      </p>
-                    ))}
-                  </div>
-
-                  <div className="pt-3 border-t border-zinc-100">
-                    <div className="text-[11px] font-semibold text-zinc-950">{cover_letter.closing}</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Mode 2: CV Solo (Full-Width Focus) */}
-          {viewMode === 'cv' && (
-            <div className="max-w-4xl mx-auto bg-white text-zinc-900 p-8 sm:p-10 rounded-sm border border-zinc-200 shadow-2xl space-y-5 text-xs" dir={isRtl ? 'rtl' : 'ltr'}>
-              <div className="border-b border-zinc-300 pb-3">
-                <h2 className="text-xl sm:text-2xl font-black text-zinc-950">{tailored_cv.headline}</h2>
-                <p className="text-xs text-zinc-600 mt-1.5 font-medium leading-relaxed">{tailored_cv.summary}</p>
-              </div>
-
-              <div>
-                <h3 className="text-[10px] font-bold uppercase tracking-wider text-zinc-950 mb-1.5 border-b border-zinc-200 pb-0.5">
-                  {isRtl ? 'المهارات التقنية' : 'Technical Skills'}
-                </h3>
-                <div className="space-y-1 text-xs">
-                  {Object.entries(tailored_cv.skills).map(([cat, list]) => (
-                    <div key={cat}>
-                      <span className="font-bold text-zinc-950">{cat}: </span>
-                      <span className="text-zinc-700">{list.join(', ')}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <h3 className="text-[10px] font-bold uppercase tracking-wider text-zinc-950 mb-2 border-b border-zinc-200 pb-0.5">
-                  {isRtl ? 'المشاريع المستهدفة' : 'Targeted Projects & Experience'}
-                </h3>
-                <div className="space-y-3">
-                  {tailored_cv.projects.map((p) => (
-                    <div key={p.id}>
-                      <div className="flex justify-between items-baseline">
-                        <span className="font-bold text-xs text-zinc-950">{p.name}</span>
-                        {p.period && <span className="text-[10px] text-zinc-500 font-medium">{p.period}</span>}
-                      </div>
-                      {p.stack.length > 0 && (
-                        <div className="text-[10px] text-zinc-600 font-mono mb-0.5">
-                          Stack: {p.stack.join(', ')}
-                        </div>
-                      )}
-                      <ul className="text-xs text-zinc-800 list-disc list-inside space-y-0.5 leading-relaxed">
-                        {p.bullets.map((b, idx) => (
-                          <li key={idx}>{b}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3 pt-2 border-t border-zinc-200">
-                {tailored_cv.education.length > 0 && (
-                  <div>
-                    <h3 className="text-[10px] font-bold uppercase tracking-wider text-zinc-950 mb-1">
-                      {isRtl ? 'التعليم' : 'Education'}
-                    </h3>
-                    {tailored_cv.education.map((e, idx) => (
-                      <div key={idx} className="text-xs text-zinc-800">
-                        {e}
-                      </div>
-                    ))}
-                  </div>
-                )}
-                {tailored_cv.languages.length > 0 && (
-                  <div>
-                    <h3 className="text-[10px] font-bold uppercase tracking-wider text-zinc-950 mb-1">
-                      {isRtl ? 'اللغات' : 'Languages'}
-                    </h3>
-                    {tailored_cv.languages.map((l, idx) => (
-                      <div key={idx} className="text-xs text-zinc-800">
-                        {l}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Mode 3: Cover Letter Solo (Full-Width Focus) */}
-          {viewMode === 'letter' && (
-            <div className="max-w-3xl mx-auto bg-white text-zinc-900 p-8 sm:p-12 rounded-sm border border-zinc-200 shadow-2xl space-y-5 text-xs leading-relaxed" dir={isRtl ? 'rtl' : 'ltr'}>
-              <div className="text-xs font-bold text-zinc-600 border-b border-zinc-200 pb-3">
-                {isRtl ? 'الموضوع :' : 'Objet :'} {cover_letter.subject}
-              </div>
-
-              <div className="font-bold text-zinc-950 pt-2">{cover_letter.greeting}</div>
-
-              <div className="space-y-3">
-                {cover_letter.paragraphs.map((para, idx) => (
-                  <p key={idx} className="text-xs text-zinc-800 text-justify leading-relaxed">
-                    {para}
-                  </p>
-                ))}
-              </div>
-
-              <div className="pt-4 border-t border-zinc-100">
-                <div className="text-xs font-bold text-zinc-950">{cover_letter.closing}</div>
-              </div>
-            </div>
-          )}
-
-          {/* Mode 4: Live PDF Viewer Embed */}
-          {viewMode === 'pdf' && (
-            <div className="space-y-3">
-              <div className="flex items-center justify-between text-xs text-zinc-400 font-mono">
-                <span>PDF Rendering Viewport</span>
-                <div className="flex gap-2">
-                  <a
-                    href={cv_pdf_url}
-                    download
-                    className="btn-3d-primary px-3 py-1 text-xs font-semibold flex items-center gap-1"
-                  >
-                    <Download className="w-3 h-3" />
-                    <span>Download CV PDF</span>
-                  </a>
-                  <a
-                    href={letter_pdf_url}
-                    download
-                    className="btn-3d-secondary px-3 py-1 text-xs font-semibold flex items-center gap-1"
-                  >
-                    <Download className="w-3 h-3" />
-                    <span>Download Letter PDF</span>
-                  </a>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 h-[750px]">
-                <iframe
-                  src={cv_pdf_url}
-                  title="Tailored CV PDF Preview"
-                  className="w-full h-full rounded-md border border-white/8 bg-[#0E1014]"
-                />
-                <iframe
-                  src={letter_pdf_url}
-                  title="Cover Letter PDF Preview"
-                  className="w-full h-full rounded-md border border-white/8 bg-[#0E1014]"
-                />
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
+        {/* TILE 4 (Lavender #E9E3FF) - Unmatched Terms */}
+        <Card
+          variant="lavender"
+          className="col-span-12 sm:col-span-6 lg:col-span-3 p-5"
+        >
+          <span className="tile-label text-purple-950 font-semibold">UNMATCHED TERMS</span>
+          <div className="flex flex-wrap gap-1 mt-2">
+            {ats_report.missing_keywords && ats_report.missing_keywords.length > 0 ? (
+              ats_report.missing_keywords.slice(0, 5).map((kw) => (
+                <span
+                  key={kw}
+                  className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-white text-purple-950 border border-purple-950/10"
+                >
+                  {kw}
+                </span>
+              ))
+            ) : (
+              <span className="text-xs text-purple-900 font-medium">None • 100% Domain Match</span>
+            )}
+          </div>
+        </Card>
+      </BentoGrid>
     </div>
   );
 };

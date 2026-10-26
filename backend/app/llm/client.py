@@ -47,18 +47,26 @@ def generate(schema: type[T], system: str, user: str, temperature: float = 0.2) 
         detail=f"LLM output validation failed after 3 attempts. Last error: {last_err}"
     )
 
+_embed_supported: bool | None = None
+
 def embed(texts: list[str]) -> list[list[float]]:
+    global _embed_supported
     if not texts:
         return []
+    if _embed_supported is False:
+        return [[0.0] * 128 for _ in texts]
+
     client = get_client()
     try:
         res = client.embed(model=settings.embed_model, input=texts)
         if "embeddings" in res:
+            _embed_supported = True
             return res["embeddings"]
     except Exception as e:
-        logger.warning(f"Embeddings via {settings.embed_model} failed ({e}). Falling back to dummy vectors.")
+        _embed_supported = False
+        logger.warning(f"Embeddings via {settings.embed_model} unavailable ({e}). Relying on high-precision skill overlap matching.")
     
-    # Graceful fallback: return empty/zero vectors so matcher can rely on skill overlap
+    # Graceful fallback: return zero vectors so matcher relies on skill overlap
     return [[0.0] * 128 for _ in texts]
 
 def check_models_status() -> tuple[bool, dict[str, bool], str | None]:

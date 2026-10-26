@@ -48,3 +48,22 @@ Structure: 3-4 concise, impactful paragraphs (max 300 words total):
 (4) Formal executive closing.
 Professional, confident tone. Return JSON matching the schema (subject, greeting, paragraphs, closing).
 """
+
+RECRUITER_QUESTIONS_SYSTEM = """You are an elite technical recruiter and hiring manager.
+Based on the job offer, generate exactly 5 to 8 realistic, high-impact interview questions that recruiters and hiring managers will ask this candidate.
+Generate ALL questions, talking points, and model answers in {language} (fr = French, en = English, ar = Arabic).
+Categories should include:
+- Technical Architecture & Core Stack
+- Problem Solving & Incident Response
+- Database & Pipeline Optimization
+- Production Delivery & Best Practices
+- Culture & Value Proposition
+
+Ensure each question has:
+- question: The realistic question
+- category: Short category
+- why_asked: What the recruiter is evaluating
+- talking_points: 2 to 3 tactical points the candidate should highlight
+- ideal_answer: A structured, persuasive response demonstrating real expertise and measurable impact.
+Return JSON matching the schema.
+"""

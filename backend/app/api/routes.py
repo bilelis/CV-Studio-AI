@@ -12,6 +12,8 @@ from app.schemas import (
     GenerateRequest,
     GenerateResponse,
     GitHubImportRequest,
+    AnalyzeRepoRequest,
+    RecruiterQuestion,
     HealthResponse
 )
 from app.llm.client import check_models_status
@@ -23,12 +25,12 @@ from app.services.profile import (
     add_single_project,
     bulk_add_projects
 )
-from app.services.job_analyzer import analyze_job
+from app.services.job_analyzer import analyze_job, generate_job_recruiter_questions
 from app.services.matcher import match_profile_to_job
 from app.services.tailor import tailor_cv_and_letter
 from app.services.renderer import render_cv_pdf, render_letter_pdf
 from app.services.ats_check import run_ats_check
-from app.services.github import fetch_github_project_candidates
+from app.services.github import fetch_github_project_candidates, analyze_single_github_repo
 
 router = APIRouter()
 
@@ -73,9 +75,18 @@ async def github_import(req: GitHubImportRequest):
     candidates = await fetch_github_project_candidates(req.username)
     return candidates
 
+@router.post("/github/analyze-repo", response_model=Project)
+async def github_analyze_repo(req: AnalyzeRepoRequest):
+    project = await analyze_single_github_repo(req.url)
+    return project
+
 @router.post("/job/analyze", response_model=JobAnalysis)
 def analyze_job_offer(req: JobAnalyzeRequest):
     return analyze_job(req.text)
+
+@router.post("/job/questions", response_model=list[RecruiterQuestion])
+def get_recruiter_questions(job: JobAnalysis):
+    return generate_job_recruiter_questions(job)
 
 @router.post("/match", response_model=MatchResult)
 def match_cv(job: JobAnalysis):
@@ -99,13 +110,19 @@ def generate_tailored_documents(req: GenerateRequest):
     # ATS Check on generated CV
     ats_report = run_ats_check(cv_path, req.job, req.language)
     
+    # Attach 5 to 8 recruiter questions for the job
+    questions = req.job.recruiter_questions
+    if not questions:
+        questions = generate_job_recruiter_questions(req.job)
+
     return GenerateResponse(
         tailored_cv=tailored_cv,
         cover_letter=cover_letter,
         cv_pdf_url=f"/files/{cv_filename}",
         letter_pdf_url=f"/files/{letter_filename}",
         ats_report=ats_report,
-        warnings=warnings
+        warnings=warnings,
+        recruiter_questions=questions
     )
 
 @router.get("/files/{name}")

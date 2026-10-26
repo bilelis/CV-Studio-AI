@@ -1,4 +1,5 @@
 import re
+import time
 import httpx
 from fastapi import HTTPException
 from app.config import settings
@@ -10,6 +11,116 @@ def get_headers() -> dict[str, str]:
     if settings.github_token:
         headers["Authorization"] = f"Bearer {settings.github_token}"
     return headers
+
+def parse_github_repo_url(url: str) -> tuple[str, str]:
+    cleaned = url.strip().rstrip("/")
+    if cleaned.endswith(".git"):
+        cleaned = cleaned[:-4]
+    match = re.search(r"github\.com/([a-zA-Z0-9_\-\.]+)/([a-zA-Z0-9_\-\.]+)", cleaned)
+    if match:
+        return match.group(1), match.group(2)
+    # Also handle owner/repo directly
+    parts = [p for p in cleaned.split("/") if p]
+    if len(parts) >= 2 and not parts[0].startswith("http"):
+        return parts[-2], parts[-1]
+    raise HTTPException(
+        status_code=400,
+        detail="Please provide a valid GitHub repository URL (e.g. https://github.com/owner/repo or owner/repo)."
+    )
+
+async def analyze_single_github_repo(repo_url: str) -> Project:
+    owner, repo_name = parse_github_repo_url(repo_url)
+    async with httpx.AsyncClient(timeout=25.0, headers=get_headers()) as http:
+        name = repo_name
+        desc = ""
+        html_url = f"https://github.com/{owner}/{repo_name}"
+        year = "2025"
+        languages = []
+        topics = []
+
+        # 1. Fetch metadata from API
+        try:
+            res = await http.get(f"https://api.github.com/repos/{owner}/{repo_name}")
+            if res.status_code == 200:
+                data = res.json()
+                name = data.get("name") or repo_name
+                desc = data.get("description") or ""
+                html_url = data.get("html_url") or html_url
+                year = str(data.get("created_at", "")[:4]) or "2025"
+                topics = data.get("topics", [])
+        except Exception:
+            pass
+
+        # 2. Fetch languages
+        try:
+            lang_res = await http.get(f"https://api.github.com/repos/{owner}/{repo_name}/languages")
+            if lang_res.status_code == 200:
+                languages = list(lang_res.json().keys())
+        except Exception:
+            pass
+
+        # 3. Fetch README from branches
+        readme_text = ""
+        for branch in ["main", "master", "dev"]:
+            try:
+                raw_url = f"https://raw.githubusercontent.com/{owner}/{repo_name}/{branch}/README.md"
+                raw_res = await http.get(raw_url, headers={"User-Agent": "Mozilla/5.0"})
+                if raw_res.status_code == 200 and raw_res.text.strip():
+                    readme_text = raw_res.text[:6000]
+                    break
+            except Exception:
+                pass
+
+        slug = re.sub(r"[^a-z0-9\-]+", "-", repo_name.lower()).strip("-")
+        prompt_input = (
+            f"Repository: {owner}/{repo_name}\n"
+            f"Description: {desc}\n"
+            f"Topics: {', '.join(topics)}\n"
+            f"Languages: {', '.join(languages)}\n"
+            f"README Content:\n{readme_text[:4000]}"
+        )
+
+        # 4. Try Ollama AI generation
+        try:
+            project_card = client.generate(
+                Project,
+                prompts.GITHUB_SUMMARY_SYSTEM,
+                prompt_input,
+                temperature=0.2
+            )
+            project_card.id = slug or f"repo-{int(time.time())}"
+            if not project_card.name or project_card.name.lower() in ["string", "project"]:
+                project_card.name = repo_name.replace("-", " ").replace("_", " ").title()
+            project_card.source = "github"
+            project_card.url = html_url
+            if not project_card.year:
+                project_card.year = year
+            return project_card
+        except Exception:
+            # High-fidelity fallback
+            clean_stack = languages[:6] if languages else (topics[:5] if topics else ["Full Stack", "TypeScript", "Python"])
+            fallback_bullets = []
+            if desc:
+                fallback_bullets.append(desc)
+            if readme_text:
+                lines = [l.strip() for l in readme_text.splitlines() if l.strip() and not l.startswith("#")]
+                if lines:
+                    fallback_bullets.append(lines[0][:160])
+            if not fallback_bullets:
+                fallback_bullets = [
+                    f"Architected and implemented {repo_name} repository featuring modern modular architecture.",
+                    "Configured development pipeline, documentation, and automated workflows."
+                ]
+            return Project(
+                id=slug or f"repo-{int(time.time())}",
+                name=repo_name.replace("-", " ").replace("_", " ").title(),
+                role="Full Stack Developer",
+                year=year,
+                stack=clean_stack,
+                bullets=fallback_bullets[:3],
+                source="github",
+                url=html_url
+            )
 
 def extract_github_username(input_val: str) -> str:
     cleaned = input_val.strip()

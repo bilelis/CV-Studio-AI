@@ -79,6 +79,36 @@ export const api = {
     return handleResponse<MasterProfile>(res);
   },
 
+  async analyzeGithubRepo(url: string): Promise<Project> {
+    const res = await fetch(`${API_BASE}/github/analyze-repo`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url }),
+    });
+    return handleResponse<Project>(res);
+  },
+
+  async resetProfile(): Promise<MasterProfile> {
+    const empty: MasterProfile = {
+      basics: {
+        name: '',
+        headline: '',
+        email: '',
+        phone: '',
+        location: '',
+        github: '',
+        linkedin: '',
+      },
+      summary: '',
+      skills: {},
+      experience: [],
+      projects: [],
+      education: [],
+      languages: [],
+    };
+    return this.updateProfile(empty);
+  },
+
   async importGithub(username: string): Promise<Project[]> {
     const res = await fetch(`${API_BASE}/github/import`, {
       method: 'POST',

@@ -7,8 +7,11 @@ import { StepMatch } from './components/StepMatch';
 import { StepResult } from './components/StepResult';
 import type { MasterProfile, JobAnalysis, GenerateResponse, HealthResponse, Lang } from './types';
 import { api } from './services/api';
+import { ToastProvider } from './components/ui/toast';
+import { useToast } from './components/ui/use-toast';
 
-export function App() {
+function AppContent() {
+  const { toast } = useToast();
   const [currentStep, setCurrentStep] = useState<number>(1);
   const [maxReachedStep, setMaxReachedStep] = useState<number>(1);
   const [health, setHealth] = useState<HealthResponse | null>(null);
@@ -58,7 +61,7 @@ export function App() {
 
     loadData();
 
-    // Check health periodically every 20 seconds to keep connection state live
+    // Check health periodically every 20 seconds
     const interval = setInterval(() => {
       api.getHealth()
         .then((h) => isMounted && setHealth(h))
@@ -92,8 +95,17 @@ export function App() {
       const genResult = await api.generate(job, selectedProjectIds, language);
       setResult(genResult);
       goToStep(4);
+      toast('Dossier Generated', {
+        description: 'CV and Cover Letter built successfully with PDF export links.',
+        type: 'success',
+      });
     } catch (err: any) {
-      setGlobalError(err.message || 'Generation failed');
+      const msg = err.message || 'Generation failed';
+      setGlobalError(msg);
+      toast('Generation Failed', {
+        description: msg,
+        type: 'error',
+      });
     } finally {
       setGenerating(false);
     }
@@ -102,11 +114,15 @@ export function App() {
   const handleReset = () => {
     setJob(null);
     setResult(null);
-    goToStep(2);
+    goToStep(1);
+    toast('Workflow Reset', {
+      description: 'Ready to select new target requisition.',
+      type: 'info',
+    });
   };
 
   return (
-    <div className="min-h-screen bg-[#0B0C0E] text-zinc-100 flex flex-col font-sans selection:bg-amber-500/25 selection:text-amber-200">
+    <div className="min-h-screen bg-[#F4F4F5] text-[#18181B] flex flex-col font-sans selection:bg-[#111111] selection:text-white">
       <Navbar 
         health={health} 
         loading={healthLoading} 
@@ -114,7 +130,7 @@ export function App() {
         onReset={handleReset}
       />
 
-      <main className="flex-1 w-full px-4 sm:px-6 lg:px-8 xl:px-10 2xl:px-12 py-5 sm:py-6 flex flex-col">
+      <main className="flex-1 w-full max-w-[1400px] mx-auto p-6 flex flex-col">
         <StepIndicator
           currentStep={currentStep}
           onSelectStep={(s) => goToStep(s)}
@@ -122,11 +138,11 @@ export function App() {
         />
 
         {globalError && (
-          <div className="w-full mb-5 p-3.5 rounded-md bg-rose-950/40 border border-rose-800/60 text-rose-300 text-xs flex items-center justify-between shadow-md">
-            <span className="font-medium">{globalError}</span>
+          <div className="w-full mb-5 p-4 rounded-[16px] bg-[#FFF5F5] border border-rose-300 text-rose-800 text-xs flex items-center justify-between shadow-2xs">
+            <span className="font-semibold">{globalError}</span>
             <button
               onClick={() => setGlobalError(null)}
-              className="text-rose-400 hover:text-white font-bold ml-4 p-1 rounded-sm hover:bg-rose-900/40 transition-colors"
+              className="text-rose-500 hover:text-rose-800 font-bold ml-4 p-1 rounded-sm cursor-pointer"
             >
               ✕
             </button>
@@ -171,22 +187,30 @@ export function App() {
         </div>
       </main>
 
-      <footer className="bg-[#111317] border-t border-[#1E222A] py-3 px-4 sm:px-8 text-xs text-zinc-400 mt-auto">
-        <div className="w-full flex flex-col sm:flex-row items-center justify-between gap-2.5">
+      <footer className="bg-white border-t border-[rgba(0,0,0,0.06)] py-4 px-6 text-xs text-[var(--text-muted)] mt-auto">
+        <div className="max-w-[1400px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <span className="h-1.5 w-1.5 rounded-xs bg-amber-500"></span>
-            <span className="font-semibold text-zinc-200">CV Studio</span>
-            <span className="text-zinc-600">•</span>
-            <span>Talent Intelligence & High-Precision ATS Matching Suite</span>
+            <span className="h-2 w-2 rounded-full bg-[#111111]"></span>
+            <span className="font-semibold text-[#18181B]">CV Matcher Studio</span>
+            <span>•</span>
+            <span>Bento ATS Matching Intelligence</span>
           </div>
-          <div className="flex items-center gap-3 text-zinc-400 text-[11px]">
-            <span className="text-emerald-400 font-medium">✓ Zero-Hallucination Guard</span>
-            <span className="text-zinc-600">•</span>
-            <span>Local Ollama qwen2.5:7b + bge-m3</span>
+          <div className="flex items-center gap-3 text-[11px]">
+            <span className="text-emerald-700 font-medium">✓ Zero-Hallucination Policy</span>
+            <span>•</span>
+            <span>Local Ollama qwen2.5:7b + bge-m3 Dense Retrieval</span>
           </div>
         </div>
       </footer>
     </div>
+  );
+}
+
+export function App() {
+  return (
+    <ToastProvider>
+      <AppContent />
+    </ToastProvider>
   );
 }
 
